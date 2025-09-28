@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Interactivo - Fortaleza Partidaria</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .graph-container {
+            margin-bottom: 50px;
+        }
+        .download-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .download-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #45a049;
+        }
+        .description {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            iframe {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Análisis de Fortaleza Institucional Partidaria</h1>
+        
+        <div class="graph-container">
+            <h2>Gráfico: Índice de Fortaleza Institucional Partidaria (PISI)</h2>
+            <div class="description">
+                <p>El Índice de Fortaleza Institucional Partidaria (PISI) es una medida compuesta que evalúa la capacidad organizacional y el peso electoral de los partidos en las elecciones municipales chilenas entre 2000 y 2024. Se construye a partir de cuatro indicadores estandarizados: porcentaje de candidatos militantes, porcentaje de electos militantes, penetración territorial y continuidad de incumbentes, los cuales se promedian para generar un valor entre 0 (máxima debilidad) y 1 (máxima fortaleza). El índice se calcula a partir de información desagregada en todas las comunas del país, pero su resultado se expresa en forma agregada a nivel nacional para cada elección, con la posibilidad de distinguir entre alcaldes y concejales. Este enfoque permite analizar si los partidos mantienen capacidad de reclutamiento, efectividad electoral, presencia territorial y control del poder una vez alcanzado. Su ventaja es ofrecer una mirada multidimensional y comparable en el tiempo.</p>
+                <p><strong>Interactividad:</strong> Haz zoom seleccionando un área, arrastra para moverte, 
+                pasa el cursor sobre los puntos para ver detalles, y usa las herramientas en la esquina superior derecha.</p>
+            </div>
+            <iframe src="pisi_interactive.html" title="PISI Interactive Plot"></iframe>
+            <div class="download-section">
+                <a href="pisi_data.xlsx" class="download-btn" download>📊 Descargar datos PISI (Excel)</a>
+            </div>
+
+            <!-- Análisis agregado -->
+            <div class="description">
+                <p><strong>Conclusiones:</strong> El análisis del PISI en Chile muestra que los partidos políticos tuvieron su mayor fortaleza institucional en las elecciones municipales de 2004 y 2008, pero desde 2012 se observa un declive sostenido, con niveles más cercanos al umbral de 0.5 y, en algunos casos, bastante por debajo. Aunque la presencia territorial se ha mantenido alta, la efectividad electoral y la capacidad de reelección de incumbentes militantes se han erosionado, reflejando un debilitamiento progresivo de los partidos frente al auge de candidaturas independientes y personalistas en el ámbito municipal.</p>
+            </div>
+        </div>
+        
+        <div class="graph-container">
+            <h2>Gráfico: Dinámicas de Cambio (Flujos de Alcaldes 2021-2024)</h2>
+            <div class="description">
+                <p>Este diagrama de flujo muestra cómo cambiaron los tipos de alcaldes entre las elecciones de 2021 y 2024. 
+                Cada flujo representa el número de comunas donde se mantuvo o cambió el tipo de alcalde 
+                (militante de partido, independiente en cupo de partido, o independiente fuera de pacto).</p>
+                <p><strong>Interactividad:</strong> Pasa el cursor sobre los flujos para ver el número exacto de comunas. 
+                Los colores representan el tipo de candidato de origen.</p>
+            </div>
+            <iframe src="flow_interactive.html" title="Flow Interactive Plot"></iframe>
+            <div class="download-section">
+                <a href="flow_data.xlsx" class="download-btn" download>📊 Descargar datos de flujos (Excel)</a>
+            </div>
+
+            <!-- Conclusión agregada -->
+            <div class="description">
+                <p><strong>Conclusiones:</strong> El diagrama de flujos confirma el debilitamiento partidario observado en el PISI: aunque cerca de dos tercios de las comunas con alcaldes militantes en 2021 mantuvieron esa condición en 2024, más de un tercio migró hacia candidaturas independientes, produciendo una pérdida neta de 14 alcaldías para los partidos. La continuidad dentro de cada categoría es alta, pero la fuga desde el mundo militante hacia opciones independientes muestra cómo los partidos, pese a conservar presencia territorial, ven erosionada su efectividad electoral y capacidad de retener poder local.</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 14px;">
+            <p>Análisis de elecciones municipales chilenas • Datos: SERVEL • Elaboración propia</p>
+        </div>
+    </div>
+</body>
+</html>

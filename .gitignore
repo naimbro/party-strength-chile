@@ -10,6 +10,8 @@
 *~
 *.tmp
 *.temp
+*_base.html
+*_base_files/
 
 # OS
 .DS_Store

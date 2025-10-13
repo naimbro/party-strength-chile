@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis PISI por Comuna - Chile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #666;
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .description {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .graph-container {
+            margin-bottom: 40px;
+        }
+        .download-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .download-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #45a049;
+        }
+        .download-btn.alcaldes {
+            background-color: #d62728;
+        }
+        .download-btn.alcaldes:hover {
+            background-color: #b91c1c;
+        }
+        .download-btn.concejales {
+            background-color: #1f77b4;
+        }
+        .download-btn.concejales:hover {
+            background-color: #1562a3;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .highlight {
+            background-color: #ffffcc;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .election-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 30px 0;
+            padding: 20px;
+        }
+        .election-section.alcaldes {
+            border-left: 4px solid #d62728;
+        }
+        .election-section.concejales {
+            border-left: 4px solid #1f77b4;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            iframe {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Análisis de Fortaleza Institucional Partidaria por Comuna</h1>
+        
+        <div class="description">
+            <p>El Índice de Fortaleza Institucional Partidaria (PISI) es una medida compuesta que evalúa la capacidad organizacional y el peso electoral de los partidos en las elecciones municipales chilenas entre 2000 y 2024. Se construye a partir de cuatro indicadores estandarizados: porcentaje de candidatos militantes, porcentaje de electos militantes, penetración territorial y continuidad de incumbentes, los cuales se promedian para generar un valor entre 0 (máxima debilidad) y 1 (máxima fortaleza).</p>
+            <p><strong>Panel lateral de control:</strong> Cada gráfico incluye un <span class="highlight">panel lateral con selector de comunas</span> que facilita la selección múltiple y búsqueda de territorios específicos. Esta nueva interfaz mejora significativamente la experiencia de análisis comparativo.</p>
+            <p><strong>Cómo usar:</strong> Use el <strong>selector múltiple en el panel izquierdo</strong> para elegir las comunas a visualizar. Puede buscar comunas específicas, seleccionar todas, o limpiar la selección. Mantenga Ctrl/Cmd para seleccionar múltiples opciones.</p>
+            <p><strong>Interactividad:</strong> Haz zoom seleccionando un área, arrastra para moverte, pasa el cursor sobre los puntos para ver detalles completos de cada comuna y año.</p>
+        </div>
+        
+        <div class="election-section alcaldes">
+            <h2>PISI Alcaldes por Comuna</h2>
+            <div class="description">
+                <p><strong>Análisis de alcaldes:</strong> El PISI para alcaldes muestra patrones específicos del poder ejecutivo municipal. Use el panel lateral para seleccionar y comparar múltiples comunas simultáneamente, analizando cómo varía la fortaleza partidaria entre territorios.</p>
+            </div>
+            <iframe src="pisi_alcaldes_interactive.html" title="PISI Alcaldes por Comuna" style="height: 800px;"></iframe>
+        </div>
+        
+        <div class="election-section concejales">
+            <h2>PISI Concejales por Comuna</h2>
+            <div class="description">
+                <p><strong>Análisis de concejales:</strong> El PISI para concejales refleja la dinámica del poder legislativo municipal. Utilice el selector de comunas en el panel izquierdo para comparar patrones entre diferentes territorios y contrastar con los resultados de alcaldes para entender diferencias en la competencia electoral.</p>
+            </div>
+            <iframe src="pisi_concejales_interactive.html" title="PISI Concejales por Comuna" style="height: 800px;"></iframe>
+        </div>
+        
+        <div class="download-section">
+            <a href="pisi_comuna_data.xlsx" class="download-btn" download>📊 Descargar datos completos (Excel - 3 hojas)</a>
+        </div>
+        
+        <div class="description">
+            <p><strong>Conclusiones:</strong> El análisis del PISI en Chile muestra que los partidos políticos tuvieron su mayor fortaleza institucional en las elecciones municipales de 2004 y 2008, pero desde 2012 se observa un declive sostenido, con niveles más cercanos al umbral de 0.5 y, en algunos casos, bastante por debajo. Aunque la presencia territorial se ha mantenido alta, la efectividad electoral y la capacidad de reelección de incumbentes militantes se han erosionado, reflejando un debilitamiento progresivo de los partidos frente al auge de candidaturas independientes y personalistas en el ámbito municipal.</p>
+            <p><strong>Interpretación comunal:</strong> Un PISI más alto indica mayor fortaleza institucional de los partidos en esa comuna. Las diferencias entre comunas pueden reflejar dinámicas políticas locales, tradiciones partidarias regionales, o el impacto de liderazgos independientes locales. La separación por tipo de elección permite identificar si los partidos son más fuertes en el ejecutivo (alcaldes) o legislativo (concejales) municipal en cada territorio.</p>
+        </div>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 14px;">
+            <p>Análisis de elecciones municipales chilenas • Datos: SERVEL • Elaboración propia</p>
+        </div>
+    </div>
+</body>
+</html>

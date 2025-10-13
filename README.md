@@ -9,10 +9,13 @@ Este repositorio contiene un análisis interactivo de la fortaleza institucional
 
 ## Visualizaciones Interactivas
 
-🔗 **[Ver análisis completo](outputs/analisis_interactivo_completo.html)**
+🔗 **[Ver análisis completo por comuna](outputs/analisis_pisi_comuna.html)**
 
 ### Gráficos Individuales
-- [Índice PISI](outputs/pisi_interactive.html)
+- [PISI Alcaldes por Comuna](outputs/pisi_alcaldes_interactive.html) - Con selector lateral de comunas
+- [PISI Concejales por Comuna](outputs/pisi_concejales_interactive.html) - Con selector lateral de comunas  
+- [Análisis general completo](outputs/analisis_interactivo_completo.html)
+- [Índice PISI nacional](outputs/pisi_interactive.html)
 - [Diagrama de Flujos](outputs/flow_interactive.html)
 
 ## Características
@@ -41,7 +44,7 @@ Simplemente abre cualquiera de los archivos HTML en tu navegador web:
 2. **Ejecutar**:
    ```r
    # Desde la raíz del repositorio
-   source("scripts/create_interactive_plots.R")
+   source("scripts/create_interactive_plots_comuna.R")
    ```
 
 3. **Resultados**: Se generarán los archivos HTML y Excel en la carpeta `outputs/`
@@ -71,25 +74,31 @@ Muestra las transiciones entre tres tipos de alcaldes:
 - **Periodicidad**: Elecciones municipales cada 4 años
 
 ### Archivos de Datos
-- `data/party_strength_analysis_data.rds`: Datos procesados completos
-- `outputs/pisi_data.xlsx`: Datos del índice PISI (descargable)
+- `data/party_strength_analysis_data.rds`: Datos procesados nivel nacional
+- `data/party_strength_comuna_data.rds`: Datos procesados por comuna  
+- `outputs/pisi_comuna_data.xlsx`: Datos del índice PISI por comuna (descargable)
 - `outputs/flow_data.xlsx`: Datos de flujos 2021-2024 (descargable)
 
 ## Estructura del Repositorio
 
 ```
 party-strength-chile/
-├── README.md                           # Este archivo
+├── README.md                                  # Este archivo
 ├── data/
-│   └── party_strength_analysis_data.rds    # Datos procesados
+│   ├── party_strength_analysis_data.rds      # Datos nivel nacional  
+│   └── party_strength_comuna_data.rds        # Datos por comuna
 ├── scripts/
-│   └── create_interactive_plots.R          # Script principal
+│   ├── 02_party_strength_indicators_comuna.R # Cálculo de indicadores
+│   └── create_interactive_plots_comuna.R     # Script principal
 ├── outputs/
-│   ├── analisis_interactivo_completo.html  # Análisis completo
-│   ├── pisi_interactive.html               # Gráfico PISI
-│   ├── flow_interactive.html               # Diagrama de flujos
-│   ├── pisi_data.xlsx                      # Datos PISI
-│   └── flow_data.xlsx                      # Datos flujos
+│   ├── analisis_pisi_comuna.html             # Análisis principal por comuna
+│   ├── pisi_alcaldes_interactive.html        # PISI Alcaldes (interactivo)
+│   ├── pisi_concejales_interactive.html      # PISI Concejales (interactivo)
+│   ├── analisis_interactivo_completo.html    # Análisis completo nacional
+│   ├── pisi_interactive.html                 # PISI nacional
+│   ├── flow_interactive.html                 # Diagrama de flujos
+│   ├── pisi_comuna_data.xlsx                 # Datos PISI por comuna
+│   └── flow_data.xlsx                        # Datos flujos
 ```
 
 ## Resultados Principales

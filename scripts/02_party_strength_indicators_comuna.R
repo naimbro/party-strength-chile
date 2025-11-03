@@ -9,20 +9,210 @@ pacman::p_load(tidyverse, rio, janitor, readxl)
 cat("Loading prepared data...\n")
 municipal_data <- readRDS("data/party_strength_analysis_data.rds")$municipal_data
 
-# Load comuna codes
-cat("Loading comuna CUT codes...\n")
-comuna_codes <- read_excel("tabla_comunas_labmun.xlsx") %>%
-  clean_names() %>%
+# Robust function to standardize comuna names
+standardize_comuna_name <- function(name) {
+  if(is.na(name)) return(NA_character_)
+  
+  # Convert to character and trim whitespace
+  name <- as.character(name)
+  name <- trimws(name)
+  
+  # Convert to uppercase
+  name <- toupper(name)
+  
+  # Remove accents and special characters
+  name <- iconv(name, from = "UTF-8", to = "ASCII//TRANSLIT")
+  # Handle common accent patterns that might not be caught
+  name <- gsub("Á|À|Ä|Â", "A", name)
+  name <- gsub("É|È|Ë|Ê", "E", name)
+  name <- gsub("Í|Ì|Ï|Î", "I", name)
+  name <- gsub("Ó|Ò|Ö|Ô", "O", name)
+  name <- gsub("Ú|Ù|Ü|Û", "U", name)
+  name <- gsub("Ñ", "N", name)
+  
+  # Remove dots and replace hyphens with spaces
+  name <- gsub("\\.", "", name)
+  name <- gsub("-", " ", name)
+  name <- gsub("'", "", name)  # Remove apostrophes (e.g., O'Higgins -> OHIGGINS)
+  
+  # Standardize multiple spaces to single space
+  name <- gsub("\\s+", " ", name)
+  name <- trimws(name)
+  
+  # Handle specific known variations
+  name <- case_when(
+    name == "AYSEN" | name == "AISEN" ~ "AYSEN",
+    name == "SANTIAGO CENTRO" ~ "SANTIAGO",
+    name == "CABO DE HORNOS (EX NAVARINO)" ~ "CABO DE HORNOS",
+    name == "CABO DE HORNOS" ~ "CABO DE HORNOS",
+    name == "ANTARTICA" ~ "ANTARTICA",
+    name == "OHIGGINS" ~ "OHIGGINS",  # From O'Higgins
+    name == "RANQUIL" ~ "RANQUIL",
+    name == "NIQUEN" ~ "NIQUEN",
+    name == "PENALOLEN" ~ "PENALOLEN",
+    name == "SANTA BARBARA" ~ "SANTA BARBARA",
+    name == "HUALANE" ~ "HUALANE",
+    name == "SAN FABIAN" ~ "SAN FABIAN",
+    name == "VICHUQUEN" ~ "VICHUQUEN",
+    name == "CHAITEN" ~ "CHAITEN",
+    name == "HUALAIHUE" ~ "HUALAIHUE",
+    name == "FUTALEUFU" ~ "FUTALEUFU",
+    name == "COCHAMO" ~ "COCHAMO",
+    name == "HUALPEN" ~ "HUALPEN",
+    name == "MAULLIN" ~ "MAULLIN",
+    name == "QUELLON" ~ "QUELLON",
+    name == "QUEILEN" ~ "QUEILEN",
+    name == "PUQUELDON" ~ "PUQUELDON",
+    name == "CURACAUTIN" ~ "CURACAUTIN",
+    name == "PITRUFQUEN" ~ "PITRUFQUEN",
+    name == "TOLTEN" ~ "TOLTEN",
+    name == "VILCUN" ~ "VILCUN",
+    name == "MULCHEN" ~ "MULCHEN",
+    name == "PUREN" ~ "PUREN",
+    name == "TRAIGUEN" ~ "TRAIGUEN",
+    name == "CANETE" ~ "CANETE",
+    name == "PICHILEMU" ~ "PICHILEMU",
+    name == "COMBARBALA" ~ "COMBARBALA",
+    name == "CANELA" ~ "CANELA",
+    name == "ILLAPEL" ~ "ILLAPEL",
+    name == "OVALLE" ~ "OVALLE",
+    name == "PUNITAQUI" ~ "PUNITAQUI",
+    name == "VINA DEL MAR" ~ "VINA DEL MAR",
+    name == "CALDERA" ~ "CALDERA",
+    name == "CHANIARAL" ~ "CHANARAL",
+    # Fix the remaining two problematic comunas
+    name == "COYHAIQUE" ~ "COIHAIQUE",  # Coyhaique is spelled as Coihaique in CSV
+    name == "LA CALERA" ~ "CALERA",     # La Calera is just Calera in CSV
+    TRUE ~ name
+  )
+  
+  return(name)
+}
+
+# Load comuna codes from CSV file with proper encoding
+cat("Loading comuna CUT codes from CSV...\n")
+
+# Try different methods to read the problematic CSV file
+comuna_codes <- tryCatch({
+  # First try with readr which handles encoding better
+  if(require(readr, quietly = TRUE)) {
+    readr::read_delim("CUT_comuna.csv", 
+                      delim = ";", 
+                      locale = readr::locale(encoding = "Latin1"),
+                      show_col_types = FALSE)
+  } else {
+    # Fallback to base R
+    read.csv2("CUT_comuna.csv", 
+              fileEncoding = "Latin1", 
+              stringsAsFactors = FALSE)
+  }
+}, error = function(e) {
+  cat("Primary read failed, trying alternative method...\n")
+  # Alternative: read as lines and parse manually
+  lines <- readLines("CUT_comuna.csv", encoding = "Latin1")
+  # Remove header
+  data_lines <- lines[-1]
+  # Split by semicolon
+  split_data <- strsplit(data_lines, ";")
+  # Create data frame
+  data.frame(
+    CUT_COM = sapply(split_data, function(x) if(length(x) >= 1) x[1] else NA),
+    COMUNA = sapply(split_data, function(x) if(length(x) >= 2) x[2] else NA),
+    stringsAsFactors = FALSE
+  )
+})
+
+# Function to repair truncated comuna names
+repair_comuna_names <- function(name) {
+  if(is.na(name)) return(NA_character_)
+  
+  # Fix known truncated names based on the CUT codes and context
+  name <- case_when(
+    name == "Concepci" ~ "Concepción",
+    name == "Santa B" ~ "Santa Bárbara",
+    name == "Ñiqu" ~ "Ñiquén", 
+    name == "Peñalol" ~ "Peñalolén",
+    name == "Vichuqu" ~ "Vichuquén",
+    name == "Hualañ" ~ "Hualañé",
+    name == "San Fabián de Alico" ~ "San Fabián",
+    name == "Cañet" ~ "Cañete",
+    name == "Chaitén" ~ "Chaitén",
+    name == "Hualaihué" ~ "Hualaihué",
+    name == "Futaleufú" ~ "Futaleufú",
+    name == "Cochamó" ~ "Cochamó", 
+    name == "Maullín" ~ "Maullín",
+    name == "Quellón" ~ "Quellón",
+    name == "Queilén" ~ "Queilén",
+    name == "Puqueldón" ~ "Puqueldón",
+    name == "Curacautín" ~ "Curacautín",
+    name == "Pitrufquén" ~ "Pitrufquén",
+    name == "Toltén" ~ "Toltén",
+    name == "Vilcún" ~ "Vilcún",
+    name == "Mulchén" ~ "Mulchén",
+    name == "Purén" ~ "Purén",
+    name == "Traiguén" ~ "Traiguén",
+    TRUE ~ name
+  )
+  
+  return(name)
+}
+
+# Standardize the comuna names
+comuna_codes <- comuna_codes %>%
+  filter(!is.na(COMUNA), COMUNA != "") %>%
   mutate(
-    # Standardize comuna names to match the data
-    comuna_clean = toupper(comuna),
-    comuna_clean = gsub("\\.", "", comuna_clean),
-    comuna_clean = gsub("-", " ", comuna_clean),
-    comuna_clean = trimws(comuna_clean)
+    # Keep original name for reference
+    comuna_original = COMUNA,
+    # Repair truncated names first
+    comuna_repaired = sapply(COMUNA, repair_comuna_names),
+    # Create standardized name for joining
+    comuna_clean = sapply(comuna_repaired, standardize_comuna_name),
+    # Ensure CUT_COM is character
+    CUT_COM = as.character(CUT_COM)
   ) %>%
-  # Rename the column back to uppercase after clean_names
-  rename(CUT_COM = cut_com) %>%
-  select(comuna_clean, CUT_COM)
+  filter(!is.na(comuna_clean), comuna_clean != "") %>%
+  select(comuna_clean, CUT_COM, comuna_original, comuna_repaired) %>%
+  # Remove any duplicates, keeping first occurrence
+  distinct(comuna_clean, .keep_all = TRUE)
+
+cat("Total comuna codes loaded:", nrow(comuna_codes), "\n")
+
+# Show some examples of name processing
+cat("\nExamples of name processing:\n")
+if(nrow(comuna_codes) > 0) {
+  sample_rows <- head(comuna_codes, 5)
+  for(i in 1:nrow(sample_rows)) {
+    cat(sprintf("Original: '%s' -> Repaired: '%s' -> Clean: '%s' (CUT: %s)\n",
+        sample_rows$comuna_original[i],
+        sample_rows$comuna_repaired[i], 
+        sample_rows$comuna_clean[i],
+        sample_rows$CUT_COM[i]))
+  }
+}
+
+# Optimize standardization with caching for performance
+cat("Optimizing comuna name standardization...\n")
+
+# Create a lookup table for unique comuna names to avoid repeated processing
+unique_comunas <- unique(municipal_data$comuna_clean[!is.na(municipal_data$comuna_clean)])
+standardized_lookup <- setNames(sapply(unique_comunas, standardize_comuna_name), unique_comunas)
+
+# Apply standardization using lookup table
+municipal_data <- municipal_data %>%
+  mutate(
+    comuna_clean_original = comuna_clean,
+    comuna_clean = standardized_lookup[comuna_clean]
+  )
+
+cat("Comuna names standardized in both datasets\n")
+
+# Check how many comunas from municipal data will get CUT codes
+comunas_in_data <- unique(municipal_data$comuna_clean[!is.na(municipal_data$comuna_clean)])
+comunas_with_cut <- intersect(comunas_in_data, comuna_codes$comuna_clean)
+cat(sprintf("Comunas in data: %d, will get CUT codes: %d (%.1f%%)\n", 
+    length(comunas_in_data), 
+    length(comunas_with_cut),
+    length(comunas_with_cut) / length(comunas_in_data) * 100))
 
 # Helper function to standardize indicators (0-1 scale) within groups
 standardize_indicator_grouped <- function(x) {
@@ -38,6 +228,10 @@ standardize_indicator_grouped <- function(x) {
 cat("Computing candidate shares by comuna...\n")
 
 candidate_shares_comuna <- municipal_data %>%
+  # Filter out rows with empty or invalid comuna names
+  filter(!is.na(comuna_clean), 
+         comuna_clean != "", 
+         trimws(comuna_clean) != "") %>%
   group_by(anio_eleccion, eleccion, comuna_clean) %>%
   summarise(
     total_candidates = n(),
@@ -59,7 +253,11 @@ candidate_shares_comuna <- municipal_data %>%
 cat("Computing winner shares by comuna...\n")
 
 winner_shares_comuna <- municipal_data %>%
-  filter(won == 1) %>%
+  # Filter out rows with empty or invalid comuna names
+  filter(!is.na(comuna_clean), 
+         comuna_clean != "", 
+         trimws(comuna_clean) != "",
+         won == 1) %>%
   group_by(anio_eleccion, eleccion, comuna_clean) %>%
   summarise(
     total_winners = n(),
@@ -81,6 +279,10 @@ winner_shares_comuna <- municipal_data %>%
 cat("Computing party presence by comuna...\n")
 
 party_presence_comuna <- municipal_data %>%
+  # Filter out rows with empty or invalid comuna names
+  filter(!is.na(comuna_clean), 
+         comuna_clean != "", 
+         trimws(comuna_clean) != "") %>%
   group_by(anio_eleccion, eleccion, comuna_clean) %>%
   summarise(
     has_militante = as.numeric(any(candidate_type == "Militante")),
@@ -95,7 +297,11 @@ party_presence_comuna <- municipal_data %>%
 cat("Computing incumbency continuity by comuna...\n")
 
 incumbency_comuna <- municipal_data %>%
-  filter(incumbent == 1) %>%
+  # Filter out rows with empty or invalid comuna names
+  filter(!is.na(comuna_clean), 
+         comuna_clean != "", 
+         trimws(comuna_clean) != "",
+         incumbent == 1) %>%
   group_by(anio_eleccion, eleccion, comuna_clean, candidate_type) %>%
   summarise(
     incumbent_candidates = n(),
@@ -122,20 +328,20 @@ pisi_data_comuna <- candidate_shares_comuna %>%
 
 # Calculate standardized indicators for PISI
 pisi_scores_comuna <- pisi_data_comuna %>%
-  group_by(eleccion, anio_eleccion) %>%
+  group_by(eleccion) %>%
   mutate(
-    # Standardize indicators within each year (to maintain comparability)
+    # Standardize indicators across all years for temporal comparability
     std_pct_militante = standardize_indicator_grouped(pct_militante),
     std_pct_militante_win = standardize_indicator_grouped(pct_militante_win),
     std_has_militante = standardize_indicator_grouped(has_militante),
     std_reelection_militante = standardize_indicator_grouped(reelection_rate_militante),
     
-    # Handle missing reelection data
-    std_reelection_militante = ifelse(is.na(std_reelection_militante), 0.5, std_reelection_militante),
-    
-    # Create composite PISI score
-    pisi_score = (std_pct_militante + std_pct_militante_win + 
-                  std_has_militante + std_reelection_militante) / 4
+    # Create composite PISI score using only available indicators
+    pisi_score = ifelse(is.na(std_reelection_militante),
+                       # Si falta reelección, promedio de 3 indicadores
+                       (std_pct_militante + std_pct_militante_win + std_has_militante) / 3,
+                       # Si está disponible, promedio de 4 indicadores
+                       (std_pct_militante + std_pct_militante_win + std_has_militante + std_reelection_militante) / 4)
   ) %>%
   ungroup()
 
@@ -171,10 +377,14 @@ pisi_scores_national <- pisi_data_comuna %>%
     std_pct_militante_win = standardize_indicator_grouped(pct_militante_win),
     std_pct_communes_militante = standardize_indicator_grouped(pct_communes_militante),
     std_reelection_militante = standardize_indicator_grouped(reelection_militante),
-    std_reelection_militante = ifelse(is.na(std_reelection_militante), 0.5, std_reelection_militante),
+    # Para el cálculo del índice, usar solo indicadores disponibles
+    available_indicators = 3 + ifelse(is.na(std_reelection_militante), 0, 1),
     
-    pisi_score = (std_pct_militante + std_pct_militante_win + 
-                  std_pct_communes_militante + std_reelection_militante) / 4
+    pisi_score = ifelse(is.na(std_reelection_militante),
+                       # Si falta reelección, promedio de 3 indicadores
+                       (std_pct_militante + std_pct_militante_win + std_pct_communes_militante) / 3,
+                       # Si está disponible, promedio de 4 indicadores  
+                       (std_pct_militante + std_pct_militante_win + std_pct_communes_militante + std_reelection_militante) / 4)
   ) %>%
   ungroup()
 

@@ -1,135 +1,101 @@
-# Análisis de Fortaleza Institucional Partidaria en Chile
+# Análisis de Fortaleza Electoral Partidaria Municipal - Chile
 
 ## Descripción
 
-Este repositorio contiene un análisis interactivo de la fortaleza institucional de los partidos políticos en las elecciones municipales chilenas (2000-2024). Incluye dos visualizaciones principales:
-
-1. **Índice de Fortaleza Institucional Partidaria (PISI)**: Medida compuesta que evalúa la evolución de la fortaleza partidaria a lo largo del tiempo
-2. **Diagrama de Flujos**: Análisis de las transiciones entre tipos de alcaldes entre 2021 y 2024
-
-## Visualizaciones Interactivas
-
-🔗 **[Ver análisis completo por comuna](outputs/analisis_pisi_comuna.html)**
-
-### Gráficos Individuales
-- [PISI Alcaldes por Comuna](outputs/pisi_alcaldes_interactive.html) - Con selector lateral de comunas
-- [PISI Concejales por Comuna](outputs/pisi_concejales_interactive.html) - Con selector lateral de comunas  
-- [Análisis general completo](outputs/analisis_interactivo_completo.html)
-- [Índice PISI nacional](outputs/pisi_interactive.html)
-- [Diagrama de Flujos](outputs/flow_interactive.html)
-
-## Características
-
-- **Gráficos interactivos** con zoom, hover y herramientas de navegación
-- **Datos descargables** en formato Excel
-- **Análisis temporal** desde 2000 hasta 2024
-- **Metodología robusta** basada en datos oficiales de SERVEL
-
-## Uso Rápido
-
-### Ver las Visualizaciones
-Simplemente abre cualquiera de los archivos HTML en tu navegador web:
-- `outputs/analisis_interactivo_completo.html` - Página principal con ambos gráficos
-- Para mejor experiencia, usa un servidor web local (ej: Live Server en VS Code)
-
-### Reproducir el Análisis
-
-1. **Requisitos**:
-   ```r
-   # Instalar paquetes necesarios
-   if (!require(pacman)) install.packages("pacman")
-   pacman::p_load(tidyverse, plotly, htmlwidgets, rio, scales, jsonlite)
-   ```
-
-2. **Ejecutar**:
-   ```r
-   # Desde la raíz del repositorio
-   source("scripts/create_interactive_plots_comuna.R")
-   ```
-
-3. **Resultados**: Se generarán los archivos HTML y Excel en la carpeta `outputs/`
+Este proyecto analiza la fortaleza electoral de los partidos políticos en las elecciones municipales chilenas desde 2004 hasta 2024. Desarrolla un **Índice de Fortaleza Partidaria Municipal** que mide el desempeño electoral de los partidos a través de cuatro indicadores estandarizados.
 
 ## Metodología
 
-### Índice PISI
-El PISI combina cuatro indicadores estandarizados:
-- **Candidatos militantes**: % de candidatos que son militantes de partidos
-- **Electos militantes**: % de ganadores que son militantes
-- **Penetración territorial**: % de comunas con candidatos militantes
-- **Continuidad incumbente**: Tasa de reelección de alcaldes militantes
+### Índice de Fortaleza Partidaria Municipal
 
-Escala: 0 (mínima fortaleza) a 1 (máxima fortaleza)
+El índice combina cuatro indicadores complementarios, cada uno normalizado en una escala de 0 a 1:
 
-### Diagrama de Flujos
-Muestra las transiciones entre tres tipos de alcaldes:
-- **Militante**: Miembro formal de partido político
-- **Independiente cupo partido**: Sin militancia, en lista partidaria
-- **Independiente fuera de pacto**: Completamente independiente
+1. **Presencia de candidatos militantes**: Porcentaje de candidatos afiliados a partidos sobre el total de candidatos
+2. **Éxito electoral de militantes**: Porcentaje de militantes electos sobre el total de personas electas  
+3. **Cobertura territorial**: Porcentaje de comunas donde los partidos presentan al menos un candidato militante
+4. **Continuidad de incumbentes**: Tasa de reelección de autoridades militantes que buscan un nuevo mandato
+
+El índice final es el promedio de los indicadores disponibles (3 indicadores cuando falta información de reelección, 4 cuando está completa).
+
+### Datos
+
+- **Fuente**: Servicio Electoral (SERVEL)
+- **Período**: 2004-2024
+- **Cobertura**: Todas las comunas de Chile
+- **Tipos de elección**: Alcaldes y Concejales
+
+## Estructura del Proyecto
+
+```
+├── scripts/
+│   ├── 02_party_strength_indicators_comuna.R    # Cálculo de indicadores por comuna
+│   └── create_interactive_plots_comuna.R        # Generación de visualizaciones
+├── data/
+│   ├── party_strength_analysis_data.rds         # Datos procesados originales
+│   └── party_strength_comuna_data.rds          # Datos con análisis por comuna
+├── outputs/
+│   ├── analisis_fortaleza_partidaria_comuna.html           # Página principal de análisis
+│   ├── indice_fortaleza_partidaria_comuna_data.xlsx        # Datos para descarga
+│   ├── pisi_alcaldes_interactive.html                      # Gráfico interactivo alcaldes
+│   ├── pisi_concejales_interactive.html                    # Gráfico interactivo concejales
+│   └── [otros archivos de gráficos y datos]
+├── CUT_comuna.csv                              # Códigos únicos territoriales
+└── tabla_comunas_labmun.xlsx                   # Tabla de comunas (respaldo)
+```
+
+## Uso
+
+### Ejecutar el análisis
+
+1. **Cálculo de indicadores**:
+```r
+source("scripts/02_party_strength_indicators_comuna.R")
+```
+
+2. **Generación de visualizaciones**:
+```r
+source("scripts/create_interactive_plots_comuna.R")
+```
+
+### Visualizar resultados
+
+Abrir `outputs/analisis_fortaleza_partidaria_comuna.html` en un navegador web para acceder a:
+- Gráficos estáticos de evolución temporal nacional
+- Gráficos interactivos por comuna con selector múltiple
+- Datos para descarga en formato Excel
+
+## Hallazgos Principales
+
+El análisis revela que los partidos políticos en Chile han experimentado un debilitamiento electoral sostenido a nivel municipal desde 2004. Aunque la presencia territorial se ha mantenido relativamente alta, la efectividad electoral y la capacidad de reelección de incumbentes militantes se han erosionado significativamente.
+
+## Requisitos
+
+### Paquetes R necesarios
+```r
+library(tidyverse)
+library(plotly)
+library(htmlwidgets)
+library(rio)
+library(scales)
+library(jsonlite)
+library(htmltools)
+library(RColorBrewer)
+library(ggplot2)
+library(gridExtra)
+library(readxl)
+library(janitor)
+```
+
+## Autor
+
+**Naim Bro**  
+Universidad Adolfo Ibáñez  
+Laboratorio Municipal (LabMun)
 
 ## Datos
 
-### Fuente Principal
-- **SERVEL** (Servicio Electoral de Chile): Resultados oficiales 1992-2024
-- **Cobertura**: Todas las comunas de Chile
-- **Periodicidad**: Elecciones municipales cada 4 años
-
-### Archivos de Datos
-- `data/party_strength_analysis_data.rds`: Datos procesados nivel nacional
-- `data/party_strength_comuna_data.rds`: Datos procesados por comuna  
-- `outputs/pisi_comuna_data.xlsx`: Datos del índice PISI por comuna (descargable)
-- `outputs/flow_data.xlsx`: Datos de flujos 2021-2024 (descargable)
-
-## Estructura del Repositorio
-
-```
-party-strength-chile/
-├── README.md                                  # Este archivo
-├── data/
-│   ├── party_strength_analysis_data.rds      # Datos nivel nacional  
-│   └── party_strength_comuna_data.rds        # Datos por comuna
-├── scripts/
-│   ├── 02_party_strength_indicators_comuna.R # Cálculo de indicadores
-│   └── create_interactive_plots_comuna.R     # Script principal
-├── outputs/
-│   ├── analisis_pisi_comuna.html             # Análisis principal por comuna
-│   ├── pisi_alcaldes_interactive.html        # PISI Alcaldes (interactivo)
-│   ├── pisi_concejales_interactive.html      # PISI Concejales (interactivo)
-│   ├── analisis_interactivo_completo.html    # Análisis completo nacional
-│   ├── pisi_interactive.html                 # PISI nacional
-│   ├── flow_interactive.html                 # Diagrama de flujos
-│   ├── pisi_comuna_data.xlsx                 # Datos PISI por comuna
-│   └── flow_data.xlsx                        # Datos flujos
-```
-
-## Resultados Principales
-
-### Evolución del PISI (2000-2024)
-- **2004-2008**: Máxima fortaleza partidaria (PISI > 0.7)
-- **2012-2024**: Declive sostenido hacia debilitamiento
-- **Diferencias**: Los partidos muestran mayor fortaleza en elecciones de concejales que de alcaldes
-
-### Flujos 2021-2024
-- **Continuidad**: Mayoría de comunas mantiene el mismo tipo de alcalde
-- **Pérdida neta**: Los partidos perdieron 14 alcaldías frente a independientes
-- **Patrón**: Migración desde militantes hacia candidaturas independientes
-
-## Limitaciones
-
-- Análisis limitado al ámbito municipal
-- Período de flujos restringido a 2021-2024
-- No incluye variables socioeconómicas o contextuales
-- Ponderación igual para todos los indicadores del PISI
-
-## Créditos
-
-- **Datos**: SERVEL (Servicio Electoral de Chile)
-- **Análisis**: Elaboración propia
-- **Tecnología**: R, Plotly, HTML
-
-## Licencia
-
-Los datos electorales son de dominio público. El código y análisis están disponibles para uso académico y de investigación.
+Análisis de elecciones municipales chilenas basado en datos del Servicio Electoral (SERVEL).
 
 ---
 
-*Para preguntas o sugerencias sobre el análisis, por favor abre un issue en este repositorio.*
+*Este análisis forma parte del proyecto de investigación sobre institucionalidad política local en Chile.*

@@ -262,327 +262,288 @@ p_concejales <- p_concejales %>%
   )
 
 # ====================================================================
-# CREAR GRÁFICOS CON PANEL LATERAL INTEGRADO
+# CREAR PÁGINA COMBINADA CON DROPDOWN ÚNICO
 # ====================================================================
 
+cat("Creando página combinada con dropdown único para ambos gráficos...\n")
 
-# Función para crear widget integrado con panel lateral
-create_integrated_widget <- function(plot_obj, chart_id, chart_title, comunas_list, colors, output_file) {
-  
-  # Guardar temporalmente el widget Plotly
+# Función auxiliar para extraer HTML de widget plotly
+extract_widget_html <- function(plot_obj) {
   temp_file <- tempfile(fileext = ".html")
-  cat("Creando widget temporal en:", temp_file, "\n")
-  
-  tryCatch({
-    htmlwidgets::saveWidget(plot_obj, temp_file, selfcontained = TRUE)
-    cat("Widget temporal creado exitosamente\n")
-  }, error = function(e) {
-    cat("Error al crear widget temporal:", e$message, "\n")
-    stop("No se pudo crear el widget temporal")
-  })
-  
-  # Leer el contenido HTML del widget
-  cat("Leyendo contenido del widget...\n")
+  htmlwidgets::saveWidget(plot_obj, temp_file, selfcontained = FALSE, libdir = "lib")
   widget_html <- paste(readLines(temp_file, warn = FALSE), collapse = "\n")
-  
-  # Limpiar archivo temporal
   unlink(temp_file)
-  cat("Widget integrado correctamente\n")
-  
-  # Generar opciones del dropdown
-  comuna_options <- paste(
-    sapply(comunas_list, function(comuna) {
-      selected <- if(comuna == "NIVEL NACIONAL") "selected" else ""
-      sprintf('<option value="%s" %s>%s</option>', comuna, selected, comuna)
-    }),
-    collapse = "\n"
-  )
-  
-  # Crear JSON con colores para JavaScript
-  colors_json <- jsonlite::toJSON(colors, auto_unbox = TRUE)
-  comunas_json <- jsonlite::toJSON(comunas_list, auto_unbox = TRUE)
-  
-  # Crear el HTML usando paste() para evitar problemas con sprintf
-  html_content <- paste0(
+  # Limpiar referencias a libdir ya que usaremos CDN
+  widget_html <- gsub('src="lib/', 'src="https://cdn.plot.ly/', widget_html)
+  return(widget_html)
+}
+
+# Generar opciones del dropdown
+comuna_options <- paste(
+  sapply(comunas_list, function(comuna) {
+    selected <- if(comuna == "NIVEL NACIONAL") "selected" else ""
+    sprintf('<option value="%s" %s>%s</option>', comuna, selected, comuna)
+  }),
+  collapse = "\n"
+)
+
+# Crear JSON con colores para JavaScript
+colors_json <- jsonlite::toJSON(colors, auto_unbox = TRUE)
+comunas_json <- jsonlite::toJSON(comunas_list, auto_unbox = TRUE)
+
+cat("Extrayendo datos JSON de los gráficos Plotly...\n")
+
+# Extraer datos y layout de cada gráfico como JSON
+alcaldes_json <- plotly::plotly_json(p_alcaldes, FALSE)
+concejales_json <- plotly::plotly_json(p_concejales, FALSE)
+
+cat("Creando página HTML con dos dropdowns independientes...\n")
+
+# Crear el HTML con dos secciones independientes, cada una con su dropdown
+combined_html <- paste0(
 '<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>', chart_title, '</title>
+    <title>Índice de Fortaleza Partidaria Municipal por Comuna</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
-        body { 
-            margin: 0; 
-            font-family: Arial, sans-serif; 
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f5f5f5;
         }
-        .chart-container { 
-            display: flex; 
-            height: 100vh; 
-        }
-        .control-panel { 
-            width: 300px; 
-            background-color: white; 
-            border-right: 1px solid #ddd;
+        .chart-section {
+            display: flex;
+            align-items: flex-start;
             padding: 20px;
-            overflow-y: auto;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            gap: 20px;
+            min-height: 520px;
         }
-        .chart-area { 
-            flex: 1; 
-            background-color: white;
-            position: relative;
+        .control-panel {
+            width: 250px;
+            min-width: 250px;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
         }
-        .panel-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #333;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 8px;
+        .chart-area {
+            flex: 1;
         }
-        .dropdown-container {
-            margin-bottom: 20px;
+        .dropdown-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .dropdown-label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
         }
-        #comunaSelector {
+        .comuna-selector {
             width: 100%;
-            height: 200px;
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 8px;
-            font-size: 13px;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .control-btn {
-            flex: 1;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background-color 0.3s;
-        }
-        .btn-select-all {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn-select-all:hover {
-            background-color: #45a049;
-        }
-        .btn-clear-all {
-            background-color: #f44336;
-            color: white;
-        }
-        .btn-clear-all:hover {
-            background-color: #da190b;
-        }
-        .search-box {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-        .info-section {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            border-left: 4px solid #4CAF50;
-        }
-        .info-section h4 {
-            margin: 0 0 10px 0;
-            color: #333;
+            border-radius: 6px;
             font-size: 14px;
+            color: #333;
+            background-color: #fff;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23333%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
         }
-        .info-section p {
-            margin: 0;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #666;
+        .comuna-selector:hover {
+            border-color: #aaa;
         }
-        #chartArea {
+        .comuna-selector:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+        .checkbox-container {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #3498db;
+        }
+        .checkbox-container label {
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+        }
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .chart-title.alcaldes { border-bottom-color: #d62728; }
+        .chart-title.concejales { border-bottom-color: #1f77b4; }
+        .plot-container {
             width: 100%;
-            height: 100%;
+            height: 450px;
+        }
+        .section-divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 0 20px;
         }
     </style>
 </head>
 <body>
-    <div class="chart-container">
+    <!-- Sección Alcaldes -->
+    <div class="chart-section">
         <div class="control-panel">
-            <div class="panel-title">Selección de Comunas</div>
-            
-            <div class="dropdown-container">
-                <label class="dropdown-label" for="comunaSelector">Comunas disponibles:</label>
-                <input type="text" id="searchBox" class="search-box" placeholder="Buscar comuna..." />
-                <select id="comunaSelector" multiple>
+            <div class="dropdown-card">
+                <label class="dropdown-label" for="alcaldesSelector">Elige una comuna:</label>
+                <select id="alcaldesSelector" class="comuna-selector">
 ', comuna_options, '
                 </select>
-                
-                <div class="button-group">
-                    <button id="selectAll" class="control-btn btn-select-all">Seleccionar Todas</button>
-                    <button id="clearAll" class="control-btn btn-clear-all">Limpiar</button>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="showNacionalAlcaldes" />
+                    <label for="showNacionalAlcaldes">Comparar con tendencia nacional</label>
                 </div>
             </div>
-            
-            <div class="info-section">
-                <h4>💡 Instrucciones</h4>
-                <p><strong>Multi-selección:</strong> Mantenga Ctrl (Cmd en Mac) para seleccionar múltiples comunas.</p>
-                <p><strong>Búsqueda:</strong> Use el cuadro de búsqueda para filtrar comunas.</p>
-                <p><strong>Botones:</strong> "Seleccionar Todas" muestra todas las comunas, "Limpiar" las oculta todas.</p>
+        </div>
+        <div class="chart-area">
+            <div class="chart-container">
+                <div class="chart-title alcaldes">Índice de Fortaleza Partidaria - Alcaldes</div>
+                <div id="alcaldesPlot" class="plot-container"></div>
             </div>
         </div>
-        
-        <div class="chart-area" id="chartArea">
-', widget_html, '
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Sección Concejales -->
+    <div class="chart-section">
+        <div class="control-panel">
+            <div class="dropdown-card">
+                <label class="dropdown-label" for="concejalesSelector">Elige una comuna:</label>
+                <select id="concejalesSelector" class="comuna-selector">
+', comuna_options, '
+                </select>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="showNacionalConcejales" />
+                    <label for="showNacionalConcejales">Comparar con tendencia nacional</label>
+                </div>
+            </div>
+        </div>
+        <div class="chart-area">
+            <div class="chart-container">
+                <div class="chart-title concejales">Índice de Fortaleza Partidaria - Concejales</div>
+                <div id="concejalesPlot" class="plot-container"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Datos de configuración
-        const COLORS = ', colors_json, ';
-        const COMUNAS = ', comunas_json, ';
-        
-        let chartReady = false;
-        
-        // Referencias DOM
-        const selector = document.getElementById("comunaSelector");
-        const searchBox = document.getElementById("searchBox");
-        const selectAllBtn = document.getElementById("selectAll");
-        const clearAllBtn = document.getElementById("clearAll");
-        
-        // Función para actualizar visibilidad de trazas
-        function updateTraceVisibility() {
-            try {
-                const selectedComunas = Array.from(selector.selectedOptions).map(option => option.value);
-                console.log("Selected comunas:", selectedComunas);
-                
-                // Buscar el div del gráfico directamente en el documento
-                const chartDiv = document.querySelector("div[id^=\'htmlwidget-\']");
-                if (chartDiv && window.Plotly && chartDiv.data) {
-                    console.log("Updating chart visibility...");
-                    console.log("Chart data traces:", chartDiv.data.length);
-                    
-                    // Get trace names from the chart data
-                    const traceNames = chartDiv.data.map(trace => trace.name);
-                    console.log("Trace names in chart:", traceNames);
-                    
-                    // Create visibility array based on trace names, not assumed order
-                    const visibilityUpdate = traceNames.map(traceName => {
-                        const isVisible = selectedComunas.includes(traceName);
-                        console.log(`Trace "${traceName}": ${isVisible ? "visible" : "hidden"}`);
-                        return isVisible;
-                    });
-                    
-                    console.log("Final visibility update:", visibilityUpdate);
-                    window.Plotly.restyle(chartDiv, { visible: visibilityUpdate });
-                } else {
-                    console.log("Plotly chart not found yet, retrying...");
-                    setTimeout(updateTraceVisibility, 300);
-                }
-            } catch (error) {
-                console.error("Error updating trace visibility:", error);
+        // Datos de los gráficos
+        const alcaldesData = ', alcaldes_json, ';
+        const concejalesData = ', concejales_json, ';
+
+        // Función genérica para actualizar un gráfico
+        function updateChart(plotId, selectorId, checkboxId, chartData) {
+            const selector = document.getElementById(selectorId);
+            const checkbox = document.getElementById(checkboxId);
+            const selectedComuna = selector.value;
+            const showNacional = checkbox.checked;
+
+            const plotDiv = document.getElementById(plotId);
+            if (plotDiv && plotDiv.data) {
+                const visibilityUpdate = [];
+                const lineStyleUpdate = [];
+
+                plotDiv.data.forEach(trace => {
+                    if (trace.name === selectedComuna) {
+                        visibilityUpdate.push(true);
+                        lineStyleUpdate.push({dash: "solid", width: 3});
+                    } else if (trace.name === "NIVEL NACIONAL" && showNacional && selectedComuna !== "NIVEL NACIONAL") {
+                        visibilityUpdate.push(true);
+                        lineStyleUpdate.push({dash: "dot", width: 2});
+                    } else {
+                        visibilityUpdate.push(false);
+                        lineStyleUpdate.push({dash: "solid", width: 3});
+                    }
+                });
+
+                Plotly.restyle(plotId, {
+                    visible: visibilityUpdate,
+                    "line.dash": lineStyleUpdate.map(s => s.dash),
+                    "line.width": lineStyleUpdate.map(s => s.width)
+                });
             }
         }
-        
-        // Función para verificar si el gráfico está listo
-        function checkChartReady() {
-            const chartDiv = document.querySelector("div[id^=\'htmlwidget-\']");
-            if (chartDiv && window.Plotly) {
-                chartReady = true;
-                console.log("Chart is ready!");
-                // Aplicar la selección inicial
-                updateTraceVisibility();
-            } else {
-                console.log("Waiting for chart to load...");
-                setTimeout(checkChartReady, 500);
-            }
+
+        // Funciones específicas para cada gráfico
+        function updateAlcaldes() {
+            updateChart("alcaldesPlot", "alcaldesSelector", "showNacionalAlcaldes", alcaldesData);
         }
-        
+
+        function updateConcejales() {
+            updateChart("concejalesPlot", "concejalesSelector", "showNacionalConcejales", concejalesData);
+        }
+
+        // Inicializar gráficos
+        function initCharts() {
+            const config = {responsive: true, displayModeBar: true};
+
+            Plotly.newPlot("alcaldesPlot", alcaldesData.data, alcaldesData.layout, config);
+            Plotly.newPlot("concejalesPlot", concejalesData.data, concejalesData.layout, config);
+
+            // Aplicar selección inicial
+            updateAlcaldes();
+            updateConcejales();
+        }
+
+        // Event listeners para Alcaldes
+        document.getElementById("alcaldesSelector").addEventListener("change", updateAlcaldes);
+        document.getElementById("showNacionalAlcaldes").addEventListener("change", updateAlcaldes);
+
+        // Event listeners para Concejales
+        document.getElementById("concejalesSelector").addEventListener("change", updateConcejales);
+        document.getElementById("showNacionalConcejales").addEventListener("change", updateConcejales);
+
         // Inicializar cuando el DOM esté listo
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("DOM loaded, checking for chart...");
-            setTimeout(checkChartReady, 1000);
-        });
-        
-        // Función para filtrar opciones del dropdown
-        function filterComunas() {
-            const searchTerm = searchBox.value.toLowerCase();
-            const options = selector.querySelectorAll("option");
-            
-            options.forEach(option => {
-                const comunaName = option.textContent.toLowerCase();
-                option.style.display = comunaName.includes(searchTerm) ? "" : "none";
-            });
-        }
-        
-        // Event listeners
-        selector.addEventListener("change", function() {
-            console.log("Selector changed");
-            updateTraceVisibility();
-        });
-        
-        searchBox.addEventListener("input", filterComunas);
-        
-        selectAllBtn.addEventListener("click", () => {
-            console.log("Select all clicked");
-            Array.from(selector.options).forEach(option => {
-                if (option.style.display !== "none") {
-                    option.selected = true;
-                }
-            });
-            updateTraceVisibility();
-        });
-        
-        clearAllBtn.addEventListener("click", () => {
-            console.log("Clear all clicked");
-            Array.from(selector.options).forEach(option => option.selected = false);
-            updateTraceVisibility();
-        });
-        
-        // Debug: mostrar información en consola cuando la página cargue
-        console.log("Panel script loaded");
-        console.log("Available comunas:", COMUNAS.length);
-        console.log("Comunas array:", COMUNAS);
-        
-        // Verify dropdown order matches array order
-        console.log("Dropdown options order:");
-        Array.from(selector.options).forEach((option, index) => {
-            console.log(index + ": " + option.value);
-        });
+        document.addEventListener("DOMContentLoaded", initCharts);
     </script>
 </body>
 </html>')
-  
-  # Guardar el HTML principal
-  writeLines(html_content, output_file)
-  cat("✓ HTML integrado guardado en:", output_file, "\n")
-  
-  # Verificar que el archivo se creó correctamente
-  if (file.exists(output_file)) {
-    cat("✓ Archivo creado exitosamente. Tamaño:", file.size(output_file), "bytes\n")
-  } else {
-    warning("⚠ Error: No se pudo crear el archivo HTML")
-  }
+
+# Guardar el HTML combinado
+writeLines(combined_html, "outputs/pisi_interactive.html")
+cat("✓ HTML combinado guardado en: outputs/pisi_interactive.html\n")
+
+# Verificar que el archivo se creó correctamente
+if (file.exists("outputs/pisi_interactive.html")) {
+  cat("✓ Archivo creado exitosamente. Tamaño:", file.size("outputs/pisi_interactive.html"), "bytes\n")
+} else {
+  warning("Error: No se pudo crear el archivo HTML combinado")
 }
-
-# Crear y guardar HTML integrado para alcaldes
-cat("Generando HTML integrado para alcaldes...\n")
-create_integrated_widget(p_alcaldes, "alcaldesChart", "Índice de Fortaleza Partidaria Municipal - Alcaldes por Comuna", comunas_list, colors, "outputs/pisi_alcaldes_interactive.html")
-
-# Crear y guardar HTML integrado para concejales
-cat("Generando HTML integrado para concejales...\n")
-create_integrated_widget(p_concejales, "concejalesChart", "Índice de Fortaleza Partidaria Municipal - Concejales por Comuna", comunas_list, colors, "outputs/pisi_concejales_interactive.html")
 
 # ====================================================================
 # CREAR GRÁFICOS ESTÁTICOS PARA INDICADORES INDIVIDUALES
@@ -875,19 +836,13 @@ html_content_body <- '
 
 html_interactivo <- '
         <h2 style="margin-top: 60px; margin-bottom: 20px; color: #34495e; border-bottom: 3px solid #3498db; padding-bottom: 10px;">Exploración por Comuna</h2>
-        
-        <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0 40px 0;">Los gráficos interactivos siguientes permiten explorar las variaciones del Índice de Fortaleza Partidaria Municipal entre comunas específicas. Use el panel lateral para seleccionar las comunas de interés y compare sus trayectorias de fortaleza electoral partidaria:</p>
-        
-        <h3 style="color: #d62728; margin: 40px 0 20px 0; font-size: 1.3em;">Índice Alcaldes por Comuna</h3>
+
+        <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0 40px 0;">El gráfico interactivo siguiente permite explorar las variaciones del Índice de Fortaleza Partidaria Municipal entre comunas específicas. Use el panel lateral izquierdo para seleccionar las comunas de interés y compare sus trayectorias de fortaleza electoral partidaria para alcaldes y concejales simultáneamente:</p>
+
         <div style="margin: 20px 0 50px 0;">
-            <iframe src="pisi_alcaldes_interactive.html" title="Índice de Fortaleza Partidaria Municipal Alcaldes por Comuna" style="width: 100%; height: 700px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></iframe>
+            <iframe src="pisi_interactive.html" title="Índice de Fortaleza Partidaria Municipal por Comuna" style="width: 100%; height: 1150px; border: none; overflow: hidden;" scrolling="no"></iframe>
         </div>
-        
-        <h3 style="color: #1f77b4; margin: 40px 0 20px 0; font-size: 1.3em;">Índice Concejales por Comuna</h3>
-        <div style="margin: 20px 0 50px 0;">
-            <iframe src="pisi_concejales_interactive.html" title="Índice de Fortaleza Partidaria Municipal Concejales por Comuna" style="width: 100%; height: 700px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></iframe>
-        </div>
-        
+
         <h2 style="margin-top: 60px; margin-bottom: 20px; color: #34495e;">Hallazgos principales</h2>
         <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">El análisis del Índice de Fortaleza Partidaria Municipal en Chile revela que, desde 2004 hasta la fecha, los partidos han experimentado un debilitamiento sostenido a nivel municipal. Aunque la presencia territorial se ha mantenido relativamente alta, la efectividad electoral y la capacidad de reelección de incumbentes militantes se han erosionado significativamente, reflejando un debilitamiento progresivo de los partidos frente al auge de candidaturas independientes y personalistas en el ámbito municipal.</p>
         <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">* Para un reporte metodológico detallado, pincha <a href="https://docs.google.com/document/d/1MAC1RibPgIazMU3c7G1shzhIu92gUu6ougwOOMieX6s/edit?usp=sharing" target="_blank">aquí</a></p>'
@@ -901,7 +856,6 @@ html_footer <- '
         <div class="footer">
             <p><strong>Laboratorio Municipal (LabMun)</strong> • Universidad Adolfo Ibáñez</p>
             <p>Análisis de elecciones municipales chilenas • Datos: Servicio Electoral (SERVEL)</p>
-            <p style="font-size: 0.9em; margin-top: 15px;">Este análisis forma parte del proyecto de investigación sobre institucionalidad política local en Chile</p>
         </div>
     </div>
 </body>
@@ -918,8 +872,7 @@ writeLines(html_content, "outputs/analisis_fortaleza_partidaria_comuna.html")
 
 cat("\n=== ANÁLISIS COMPLETADO EXITOSAMENTE ===\n")
 cat("Archivos generados en outputs/:\n")
-cat("- pisi_alcaldes_interactive.html (Gráfico del índice para alcaldes con selector de comuna)\n")
-cat("- pisi_concejales_interactive.html (Gráfico del índice para concejales con selector de comuna)\n")
+cat("- pisi_interactive.html (Gráfico combinado con dropdown único para ambos tipos de elección)\n")
 cat("- analisis_fortaleza_partidaria_comuna.html (Página principal con instrucciones)\n")
 cat("- indice_fortaleza_partidaria_comuna_data.xlsx (Datos del índice por comuna)\n\n")
 

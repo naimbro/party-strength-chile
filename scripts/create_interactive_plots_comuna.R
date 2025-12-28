@@ -535,12 +535,12 @@ combined_html <- paste0(
 </html>')
 
 # Guardar el HTML combinado
-writeLines(combined_html, "outputs/pisi_interactive.html")
-cat("✓ HTML combinado guardado en: outputs/pisi_interactive.html\n")
+writeLines(combined_html, "docs/pisi_interactive.html")
+cat("✓ HTML combinado guardado en: docs/pisi_interactive.html\n")
 
 # Verificar que el archivo se creó correctamente
-if (file.exists("outputs/pisi_interactive.html")) {
-  cat("✓ Archivo creado exitosamente. Tamaño:", file.size("outputs/pisi_interactive.html"), "bytes\n")
+if (file.exists("docs/pisi_interactive.html")) {
+  cat("✓ Archivo creado exitosamente. Tamaño:", file.size("docs/pisi_interactive.html"), "bytes\n")
 } else {
   warning("Error: No se pudo crear el archivo HTML combinado")
 }
@@ -679,7 +679,7 @@ panel_2x2 <- grid.arrange(p1_static, p2_static, p3_static, p4_static,
                          top = "Evolución de los Indicadores del Índice de Fortaleza Partidaria Municipal (2004-2024)")
 
 # Guardar panel 2x2
-ggsave("outputs/panel_indicadores_indice.png", panel_2x2, width = 14, height = 10, dpi = 300, bg = "white")
+ggsave("docs/panel_indicadores_indice.png", panel_2x2, width = 14, height = 10, dpi = 300, bg = "white")
 
 # ====================================================================
 # CREAR GRÁFICO ESTÁTICO DEL ÍNDICE AGREGADO NACIONAL
@@ -712,7 +712,7 @@ p_indice_nacional <- ggplot(indice_nacional, aes(x = anio_eleccion, y = pisi_sco
   theme(legend.position = "bottom")
 
 # Guardar gráfico PISI nacional
-ggsave("outputs/indice_nacional_agregado.png", p_indice_nacional, width = 12, height = 7, dpi = 300, bg = "white")
+ggsave("docs/indice_nacional_agregado.png", p_indice_nacional, width = 12, height = 7, dpi = 300, bg = "white")
 
 cat("✓ Gráficos estáticos creados exitosamente\n")
 
@@ -754,7 +754,7 @@ export_list <- list(
   "concejales" = pisi_export_concejales
 )
 
-rio::export(export_list, "outputs/indice_fortaleza_partidaria_comuna_data.xlsx")
+rio::export(export_list, "docs/indice_fortaleza_partidaria_comuna_data.xlsx")
 
 # ====================================================================
 # CREAR PÁGINA HTML COMBINADA
@@ -864,14 +864,14 @@ html_footer <- '
 # Combinar todas las partes
 html_content <- paste0(html_header, html_content_body, html_interactivo, html_footer)
 
-writeLines(html_content, "outputs/analisis_fortaleza_partidaria_comuna.html")
+writeLines(html_content, "docs/analisis_fortaleza_partidaria_comuna.html")
 
 # ====================================================================
 # RESUMEN FINAL
 # ====================================================================
 
 cat("\n=== ANÁLISIS COMPLETADO EXITOSAMENTE ===\n")
-cat("Archivos generados en outputs/:\n")
+cat("Archivos generados en docs/:\n")
 cat("- pisi_interactive.html (Gráfico combinado con dropdown único para ambos tipos de elección)\n")
 cat("- analisis_fortaleza_partidaria_comuna.html (Página principal con instrucciones)\n")
 cat("- indice_fortaleza_partidaria_comuna_data.xlsx (Datos del índice por comuna)\n\n")
@@ -886,5 +886,5 @@ cat(sprintf("Total de comunas incluidas: %d\n", n_comunas))
 cat(sprintf("Años analizados: %s\n\n", 
     paste(sort(unique(index_data_full$anio_eleccion)), collapse = ", ")))
 
-cat("Para visualizar los resultados, abra 'outputs/analisis_fortaleza_partidaria_comuna.html' en su navegador.\n")
+cat("Para visualizar los resultados, abra 'docs/analisis_fortaleza_partidaria_comuna.html' en su navegador.\n")
 cat("¡Análisis por comuna listo! 📊\n")

@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fortaleza Electoral Partidaria en Chile - Análisis Municipal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Georgia, serif; margin: 0; padding: 20px; background-color: #f8f9fa; line-height: 1.6; }
+        body { font-family: 'Open Sans', sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; line-height: 1.6; color: #333333; }
         .container { max-width: 900px; margin: 0 auto; background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; text-align: center; margin-bottom: 10px; font-size: 2.2em; font-weight: 300; }
+        h1 { color: #1a5276; text-align: center; margin-bottom: 10px; font-size: 2.2em; font-weight: 400; }
         h2 { color: #34495e; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-top: 40px; font-size: 1.6em; }
         h3 { color: #2c3e50; margin-top: 30px; font-size: 1.3em; }
         .subtitle { text-align: center; color: #7f8c8d; font-size: 1.1em; margin-bottom: 40px; font-style: italic; }
@@ -32,6 +33,11 @@
         .download-btn:hover { background-color: #218838; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
         .conclusion { background-color: #f1f3f4; padding: 25px; border-radius: 8px; margin: 30px 0; border-left: 5px solid #6c757d; font-style: italic; }
         .footer { margin-top: 50px; padding-top: 20px; border-top: 2px solid #e9ecef; text-align: center; color: #6c757d; font-size: 0.95em; }
+        .indicators-table { width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 0.95em; }
+        .indicators-table th { text-align: left; padding: 12px 10px; border-bottom: 2px solid #1a5276; color: #1a5276; font-weight: 600; }
+        .indicators-table td { padding: 12px 10px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+        .indicators-table .indicator-name { color: #17a2b8; font-weight: 600; }
+        .indicators-table .indicator-desc { color: #333333; }
         @media (max-width: 768px) { .container { padding: 20px; } .indicators-grid { grid-template-columns: 1fr; } iframe { height: 500px; } }
     </style>
 </head>
@@ -48,12 +54,33 @@
         
         <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">El Índice de Fortaleza Partidaria Municipal desarrollado por el LabMun mide el desempeño electoral de los partidos en elecciones municipales chilenas desde 2004 hasta 2024. Este índice compuesto (escala 0-1) combina cuatro indicadores complementarios expresados en porcentajes:</p>
         
-        <ul style="margin: 20px 0 40px 40px; line-height: 1.8; font-size: 1.05em;">
-            <li style="margin-bottom: 8px;"><strong>Presencia de candidatos militantes</strong>: Porcentaje de candidatos afiliados a partidos sobre el total de candidatos por elección.</li>
-            <li style="margin-bottom: 8px;"><strong>Éxito electoral de militantes</strong>: Porcentaje de militantes electos sobre el total de personas electas por elección.</li>
-            <li style="margin-bottom: 8px;"><strong>Cobertura territorial</strong>: Porcentaje de comunas donde los partidos presentan al menos un candidato militante.</li>
-            <li style="margin-bottom: 8px;"><strong>Continuidad de incumbentes</strong>: Tasa de reelección de autoridades militantes que buscan un nuevo mandato.</li>
-        </ul>
+        <h3 style="color: #1a5276; margin-top: 40px; margin-bottom: 15px; font-weight: 600;">Indicadores</h3>
+        <table class="indicators-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Indicador</th>
+                    <th style="width: 70%;">Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="indicator-name">Presencia de candidatos militantes</td>
+                    <td class="indicator-desc">Porcentaje de candidatos afiliados a partidos sobre el total de candidatos por elección.</td>
+                </tr>
+                <tr>
+                    <td class="indicator-name">Éxito electoral de militantes</td>
+                    <td class="indicator-desc">Porcentaje de militantes electos sobre el total de personas electas por elección.</td>
+                </tr>
+                <tr>
+                    <td class="indicator-name">Cobertura territorial</td>
+                    <td class="indicator-desc">Porcentaje de comunas donde los partidos presentan al menos un candidato militante.</td>
+                </tr>
+                <tr>
+                    <td class="indicator-name">Continuidad de incumbentes</td>
+                    <td class="indicator-desc">Tasa de reelección de autoridades militantes que buscan un nuevo mandato.</td>
+                </tr>
+            </tbody>
+        </table>
         
         <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 40px 0 30px 0;">Los siguientes gráficos muestran la evolución temporal de cada uno de los cuatro indicadores que componen el Índice de Fortaleza Partidaria Municipal a nivel nacional. Todos los valores se expresan en porcentajes, diferenciando entre elecciones de alcaldes (línea roja) y concejales (línea azul):</p>
         

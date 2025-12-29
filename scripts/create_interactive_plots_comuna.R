@@ -826,6 +826,7 @@ html_content_body <- '
         
         <div style="text-align: center; margin: 40px 0;">
             <img src="panel_indicadores_indice.png" alt="Panel con los cuatro indicadores del Índice de Fortaleza Partidaria Municipal" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <p style="margin-top: 15px; font-size: 0.95em; color: #555;"><span style="color: #d62728;">●</span> Alcaldes &nbsp;&nbsp; <span style="color: #1f77b4;">●</span> Concejales</p>
         </div>
         
         <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 40px 0 30px 0;">Para construir el Índice de Fortaleza Partidaria Municipal, cada uno de los cuatro indicadores se normaliza en una escala de 0 a 1 (donde 0 representa el valor mínimo observado y 1 el máximo para cada tipo de elección). Posteriormente, se calcula el promedio simple de los cuatro indicadores normalizados, generando un índice sintético que varía entre 0 (mínima fortaleza electoral) y 1 (máxima fortaleza electoral). El siguiente gráfico presenta la evolución del índice agregado a nivel nacional:</p>

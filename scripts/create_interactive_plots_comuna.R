@@ -813,7 +813,7 @@ html_content_body <- '
         
         <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">A nivel municipal, el desempeño electoral de los partidos adquiere una relevancia particular: los gobiernos locales son la base de la representación política y un espacio clave de vinculación entre ciudadanía e instituciones. Evaluar la fuerza electoral de los partidos en este nivel permite comprender mejor el peso que mantienen en la competencia política territorial, así como los desafíos de gobernabilidad, continuidad y coordinación entre niveles de gobierno.</p>
         
-        <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">El Índice de Fortaleza Partidaria Municipal desarrollado por el LabMun mide el desempeño electoral de los partidos en elecciones municipales chilenas desde 2004 hasta 2024. Este índice compuesto (escala 0-1) combina cuatro indicadores complementarios expresados en porcentajes:</p>
+        <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">El Índice de Fortaleza Partidaria Municipal desarrollado por el LabMun mide el desempeño electoral de los partidos en elecciones municipales chilenas desde 2004 hasta 2024. Este índice compuesto (escala 0-1) combina cuatro indicadores complementarios expresados en porcentajes. (Para un reporte metodológico detallado, pincha <a href="https://drive.google.com/file/d/1dkZUzJ85CabVjP5H_cmTQOccqqjhk-aL/view?usp=sharing" target="_blank">aquí</a>)</p>
         
         <ul style="margin: 20px 0 40px 40px; line-height: 1.8; font-size: 1.05em;">
             <li style="margin-bottom: 8px;"><strong>Presencia de candidatos militantes</strong>: Porcentaje de candidatos afiliados a partidos sobre el total de candidatos por elección.</li>
@@ -845,8 +845,7 @@ html_interactivo <- '
         </div>
 
         <h2 style="margin-top: 60px; margin-bottom: 20px; color: #34495e;">Hallazgos principales</h2>
-        <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">El análisis del Índice de Fortaleza Partidaria Municipal en Chile revela que, desde 2004 hasta la fecha, los partidos han experimentado un debilitamiento sostenido a nivel municipal. Aunque la presencia territorial se ha mantenido relativamente alta, la efectividad electoral y la capacidad de reelección de incumbentes militantes se han erosionado significativamente, reflejando un debilitamiento progresivo de los partidos frente al auge de candidaturas independientes y personalistas en el ámbito municipal.</p>
-        <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">* Para un reporte metodológico detallado, pincha <a href="https://docs.google.com/document/d/1MAC1RibPgIazMU3c7G1shzhIu92gUu6ougwOOMieX6s/edit?usp=sharing" target="_blank">aquí</a></p>'
+        <p style="text-align: justify; font-size: 1.05em; line-height: 1.7; margin: 30px 0;">El análisis del Índice de Fortaleza Partidaria Municipal en Chile revela que, desde 2004 hasta la fecha, los partidos han experimentado un debilitamiento sostenido a nivel municipal. Aunque la presencia territorial se ha mantenido relativamente alta, la efectividad electoral y la capacidad de reelección de incumbentes militantes se han erosionado significativamente, reflejando un debilitamiento progresivo de los partidos frente al auge de candidaturas independientes y personalistas en el ámbito municipal.</p>'
 
 html_footer <- '
         <div class="download-section">
